@@ -1,6 +1,7 @@
 import LoadingDots from "./LoadingDots.jsx";
+import TypingText from "./TypingText.jsx";
 
-export default function MessageBubble({ role, content, isLoading = false }) {
+export default function MessageBubble({ role, content, isLoading = false, onUpdate }) {
   const isUser = role === "user";
 
   return (
@@ -20,7 +21,13 @@ export default function MessageBubble({ role, content, isLoading = false }) {
               : "bg-white text-slate-700 border border-slate-100 rounded-tl-sm"
           }`}
         >
-          {isLoading ? <LoadingDots /> : content}
+          {isLoading ? (
+            <LoadingDots />
+          ) : isUser ? (
+            content
+          ) : (
+            <TypingText text={content} onUpdate={onUpdate} />
+          )}
         </div>
       </div>
     </div>

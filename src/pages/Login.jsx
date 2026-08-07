@@ -5,8 +5,8 @@ import Button from "../components/Button.jsx";
 
 export default function Login() {
   const { login } = useAuth();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("admin");
+  const [password, setPassword] = useState("admin123");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 

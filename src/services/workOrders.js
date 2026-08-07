@@ -8,6 +8,73 @@ const UPDATED_EVENT = "workorders:updated";
 
 export const STATUS = { PENDING: "Pending", COMPLETED: "Completed" };
 
+function hoursAgo(hours) {
+  return new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
+}
+
+// Seed data so the dashboard isn't empty on first load. Only written once,
+// the first time the app ever runs (see seedDemoDataIfEmpty below) — never
+// overwrites real submissions or reappears after everything's deleted.
+const DEMO_ORDERS = [
+  {
+    id: "demo-1",
+    requesterName: "Dana Kim",
+    location: "Building 3, Kitchen",
+    description: "Gas smell near the stove",
+    priority: "High",
+    status: STATUS.PENDING,
+    submittedAt: hoursAgo(2),
+    completedAt: null,
+  },
+  {
+    id: "demo-2",
+    requesterName: "Marcus Webb",
+    location: "Loading Dock 2",
+    description: "Hydraulic lift is leaking fluid",
+    priority: "Medium",
+    status: STATUS.PENDING,
+    submittedAt: hoursAgo(6),
+    completedAt: null,
+  },
+  {
+    id: "demo-3",
+    requesterName: "Alicia Gomez",
+    location: "Building 1, Room 204",
+    description: "Ceiling light flickering on and off",
+    priority: "Low",
+    status: STATUS.PENDING,
+    submittedAt: hoursAgo(20),
+    completedAt: null,
+  },
+  {
+    id: "demo-4",
+    requesterName: "Omar Haddad",
+    location: "Building 2, Room 110",
+    description: "Thermostat not responding to changes",
+    priority: "Medium",
+    status: STATUS.COMPLETED,
+    submittedAt: hoursAgo(50),
+    completedAt: hoursAgo(30),
+  },
+  {
+    id: "demo-5",
+    requesterName: "Grace Liu",
+    location: "Parking Garage Level 1",
+    description: "Broken security camera near entrance",
+    priority: "Low",
+    status: STATUS.COMPLETED,
+    submittedAt: hoursAgo(96),
+    completedAt: hoursAgo(72),
+  },
+];
+
+// Call once at app startup. No-ops if storage has ever been written to
+// (including if the user deleted everything — that's a real empty state).
+export function seedDemoDataIfEmpty() {
+  if (localStorage.getItem(STORAGE_KEY) !== null) return;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(DEMO_ORDERS));
+}
+
 function readAll() {
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) return [];

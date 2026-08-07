@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar.jsx";
 import Navbar from "../components/Navbar.jsx";
 import StatCard from "../components/StatCard.jsx";
@@ -23,6 +24,7 @@ const PRIORITY_STYLES = {
 };
 
 const PRIORITY_OPTIONS = ["Low", "Medium", "High"];
+const PRIORITY_RANK = { High: 0, Medium: 1, Low: 2 };
 
 function formatTimestamp(iso) {
   return iso ? new Date(iso).toLocaleString() : "—";
@@ -41,20 +43,38 @@ function priorityBadge(row) {
 }
 
 const EMPTY_FORM = { requesterName: "", location: "", description: "", priority: "Low" };
+const PRIORITY_FILTER_OPTIONS = ["All", "High", "Medium", "Low"];
+
+function matchesFilters(order, search, priorityFilter) {
+  if (priorityFilter !== "All" && order.priority !== priorityFilter) return false;
+  if (!search.trim()) return true;
+  const haystack = `${order.requesterName} ${order.location} ${order.description}`.toLowerCase();
+  return haystack.includes(search.trim().toLowerCase());
+}
 
 export default function Admin() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [workOrders, setWorkOrders] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [search, setSearch] = useState("");
+  const [priorityFilter, setPriorityFilter] = useState("All");
 
   useEffect(() => {
     setWorkOrders(getWorkOrders());
     return subscribeToWorkOrders(setWorkOrders);
   }, []);
 
-  const pending = workOrders.filter((order) => order.status !== STATUS.COMPLETED);
-  const completed = workOrders.filter((order) => order.status === STATUS.COMPLETED);
+  // Stat cards always reflect the true totals; only the tables below react to filters.
+  const totalPending = workOrders.filter((order) => order.status !== STATUS.COMPLETED).length;
+  const totalCompleted = workOrders.filter((order) => order.status === STATUS.COMPLETED).length;
+
+  const filtered = workOrders.filter((order) => matchesFilters(order, search, priorityFilter));
+  const pending = filtered
+    .filter((order) => order.status !== STATUS.COMPLETED)
+    .sort((a, b) => PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority]);
+  const completed = filtered.filter((order) => order.status === STATUS.COMPLETED);
 
   const openEdit = (order) => {
     setEditingId(order.id);
@@ -138,19 +158,53 @@ export default function Admin() {
       />
 
       <div className="flex flex-1 flex-col overflow-y-auto scrollbar-thin">
-        <Navbar title="Dashboard" subtitle={`Signed in as ${user?.name ?? "Admin"}`} />
+        <Navbar
+          title="Dashboard"
+          subtitle={`Signed in as ${user?.name ?? "Admin"}`}
+          right={
+            <Button variant="secondary" size="sm" onClick={() => navigate("/")}>
+              ← Back to Home
+            </Button>
+          }
+        />
 
         <main className="flex-1 px-6 py-6">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:max-w-xl">
             <StatCard label="Total Work Orders" value={workOrders.length} icon="🧰" />
-            <StatCard label="Pending" value={pending.length} icon="⏳" />
-            <StatCard label="Completed" value={completed.length} icon="✅" />
+            <StatCard label="Pending" value={totalPending} icon="⏳" />
+            <StatCard label="Completed" value={totalCompleted} icon="✅" />
+          </div>
+
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by name, location, or description..."
+              aria-label="Search work orders"
+              className="w-full flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm
+                text-slate-800 placeholder:text-slate-400 shadow-sm
+                focus:outline-none focus:ring-4 focus:ring-primary-100 focus:border-primary sm:max-w-sm"
+            />
+            <select
+              value={priorityFilter}
+              onChange={(e) => setPriorityFilter(e.target.value)}
+              aria-label="Filter by priority"
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm
+                text-slate-800 shadow-sm focus:outline-none focus:ring-4 focus:ring-primary-100 focus:border-primary"
+            >
+              {PRIORITY_FILTER_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option === "All" ? "All priorities" : option}
+                </option>
+              ))}
+            </select>
           </div>
 
           <section className="mt-8 mb-8">
             <h3 className="text-base font-semibold text-slate-800">Pending Work Orders</h3>
             <p className="text-sm text-slate-500">
-              Submissions from the public request form appear here automatically.
+              Submissions from the public request form appear here automatically, sorted by priority.
             </p>
             <div className="mt-3">
               <Table columns={pendingColumns} rows={pending} emptyMessage="No pending work orders." />

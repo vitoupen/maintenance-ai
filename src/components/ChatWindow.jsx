@@ -4,8 +4,10 @@ import MessageBubble from "./MessageBubble.jsx";
 export default function ChatWindow({ messages, isTyping }) {
   const bottomRef = useRef(null);
 
+  const scrollToBottom = () => bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    scrollToBottom();
   }, [messages, isTyping]);
 
   if (messages.length === 0 && !isTyping) {
@@ -29,7 +31,12 @@ export default function ChatWindow({ messages, isTyping }) {
     <div className="flex-1 overflow-y-auto scrollbar-thin px-4 py-6 sm:px-8">
       <div className="mx-auto flex max-w-3xl flex-col gap-4">
         {messages.map((msg) => (
-          <MessageBubble key={msg.id} role={msg.role} content={msg.content} />
+          <MessageBubble
+            key={msg.id}
+            role={msg.role}
+            content={msg.content}
+            onUpdate={scrollToBottom}
+          />
         ))}
         {isTyping && <MessageBubble role="assistant" isLoading />}
         <div ref={bottomRef} />
