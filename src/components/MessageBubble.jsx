@@ -12,7 +12,7 @@ export default function MessageBubble({ role, content, isLoading = false, onUpda
             isUser ? "bg-primary text-white" : "bg-slate-200 text-slate-600"
           }`}
         >
-          {isUser ? "U" : "AI"}
+          {isUser ? "U" : "🛠️"}
         </div>
         <div
           className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-soft whitespace-pre-wrap ${

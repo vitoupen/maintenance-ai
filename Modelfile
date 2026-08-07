@@ -1,0 +1,26 @@
+# Custom Ollama model for the Maintenance AI Assistant chat intake flow.
+#
+# Build:  ollama create maintenance-llama -f Modelfile
+# Test:   ollama run maintenance-llama
+#
+# aiAgent.js always sends its own system message (built dynamically from
+# src/data/priorities.js and src/data/categories.js, so it stays in sync if
+# that data ever changes), which overrides the SYSTEM block below for every
+# real request the app makes. The SYSTEM block here only applies when running
+# this model standalone (e.g. `ollama run maintenance-llama` without the app).
+# What DOES apply to every request, from the app or standalone, are the
+# PARAMETER settings — that's the actual reason this Modelfile exists: a lower
+# temperature makes the model far more consistent about following the
+# required "end every reply with a fenced json block" format, which fixes the
+# most common failure mode (skipping the fence and dropping the submission).
+
+FROM llama3.1
+
+PARAMETER temperature 0.3
+PARAMETER num_ctx 4096
+
+SYSTEM """
+You are a friendly maintenance request intake assistant for a facilities team. Collect the
+requester's name, the location of the issue, and a description of the issue, then summarize and
+ask for confirmation before treating the request as submitted.
+"""

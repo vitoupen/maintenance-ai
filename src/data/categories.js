@@ -1,0 +1,22 @@
+// Hazard/request categories seen in the anonymized hackathon dataset,
+// plus a general catch-all for non-hazard maintenance requests.
+export const CATEGORIES = [
+  "Chemical/Spill Hazard",
+  "Electrical Hazard",
+  "Emergency Equipment",
+  "Emergency/Evacuation",
+  "Emergency/Fire Safety",
+  "Ergonomic Hazard",
+  "Fall Hazard",
+  "Falling Object Hazard",
+  "First Aid/Medical",
+  "Plumbing/Water Hazard",
+  "Sanitation Hazard",
+  "Security/Access Hazard",
+  "Slip Hazard",
+  "Slip/Trip/Cut Hazard",
+  "Trip Hazard",
+  "Vehicle/Traffic Hazard",
+  "Water/Flood Hazard",
+  "General Maintenance",
+];

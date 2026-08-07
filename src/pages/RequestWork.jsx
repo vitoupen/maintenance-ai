@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import ChatWindow from "../components/ChatWindow.jsx";
 import ChatInput from "../components/ChatInput.jsx";
 import Button from "../components/Button.jsx";
+import TicketSummaryModal from "../components/TicketSummaryModal.jsx";
 import { getAgentResponse, EMPTY_DRAFT } from "../services/aiAgent.js";
 import { addWorkOrder } from "../services/workOrders.js";
 
@@ -12,6 +13,7 @@ export default function RequestWork() {
   const [draft, setDraft] = useState(EMPTY_DRAFT);
   const [isTyping, setIsTyping] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submittedOrder, setSubmittedOrder] = useState(null);
   const started = useRef(false);
 
   useEffect(() => {
@@ -43,8 +45,9 @@ export default function RequestWork() {
     setMessages((prev) => [...prev, { id: nextId++, role: "assistant", content: reply }]);
 
     if (complete && workOrder) {
-      addWorkOrder(workOrder);
+      const created = addWorkOrder(workOrder);
       setSubmitted(true);
+      setSubmittedOrder(created);
     }
   };
 
@@ -52,6 +55,7 @@ export default function RequestWork() {
     setMessages([]);
     setDraft(EMPTY_DRAFT);
     setSubmitted(false);
+    setSubmittedOrder(null);
     greet();
   };
 
@@ -81,6 +85,10 @@ export default function RequestWork() {
 
       <ChatWindow messages={messages} isTyping={isTyping} />
       <ChatInput onSend={handleSend} disabled={isTyping || submitted} />
+
+      {submittedOrder && (
+        <TicketSummaryModal order={submittedOrder} onClose={() => setSubmittedOrder(null)} />
+      )}
     </div>
   );
 }
